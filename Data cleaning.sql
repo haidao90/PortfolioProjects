@@ -4,11 +4,8 @@
 select *
 from PortfolioProject..NashvilleHousing
 
--- Standardize Date Format
-
-select SaleDateConverted, convert(Date,SaleDate)
-from PortfolioProject..NashvilleHousing
-
+-- Update Date Format
+	
 Update NashvilleHousing
 SET SaleDate = convert(Date,SaleDate)
 
@@ -25,6 +22,7 @@ from PortfolioProject..NashvilleHousing
 --where PropertyAddress is null
 order by ParcelID
 
+---- Check the property adress is null
 
 select a.ParcelID, a.PropertyAddress, b.ParcelID, b.PropertyAddress, ISNULL(a.PropertyAddress,b.PropertyAddress)
 from PortfolioProject..NashvilleHousing a
@@ -33,6 +31,8 @@ join PortfolioProject..NashvilleHousing b
 	and a.[UniqueID ] <> b.[UniqueID ] 
 where a.PropertyAddress is null
 
+---- Update the property adress
+	
 Update a
 SET PropertyAddress = ISNULL(a.PropertyAddress,b.PropertyAddress)
 from PortfolioProject..NashvilleHousing a
@@ -133,11 +133,30 @@ Select *,
 from PortfolioProject..NashvilleHousing
 --order by ParcelID
 )
+DELETE
+from RowNumCTE
+where row_num>1
+
+--- Check if the duplicates are removed
+With RowNumCTE AS(
+Select *,
+	ROW_NUMBER() OVER (
+	PARTITION BY ParcelID,
+				PropertyAddress,
+				SalePrice,
+				SaleDate,
+				LegalReference
+				ORDER BY
+					UniqueID
+					) row_num
+from PortfolioProject..NashvilleHousing
+--order by ParcelID
+)
 select *
 from RowNumCTE
 where row_num>1
-order by PropertyAddress
-
+order by PropertyAddress	
+	
 ---- Delete Unused Columns
 select *
 from PortfolioProject..NashvilleHousing
